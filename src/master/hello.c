@@ -7,7 +7,8 @@ static char *serial = "/dev/ttyATH0";
 
 int main(int argc, char *argv[])
 {
-   comio2_ad_t *ad=NULL;  
+   comio2_ad_t *ad=NULL;
+   int error;
 
    printf("Hello, world (from ");
 
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
       fprintf(stderr, "\n");
       exit(1);
    }
-   comio2_atCmdSend(ad, 1, "", 0);
+   comio2_atCmdSend(ad, 1, "", 0, &error);
    
    comio2_close(ad);
 }
