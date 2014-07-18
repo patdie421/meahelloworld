@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "comio2.h"
 
 static char *serial = "/dev/ttyATH0";
@@ -20,7 +22,7 @@ int main(int argc, char *argv[])
    printf(")\n");
 
    ad=comio2_new_ad();
-   ret=comio2_init(ad, serial, B115200);
+   int ret=comio2_init(ad, serial, B115200);
    if(ret<0)
    {
       fprintf(stderr, "ERROR - %s ", serial);
