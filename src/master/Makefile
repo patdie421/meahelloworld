@@ -16,29 +16,30 @@ DEBUGFLAGS  = -D__DEBUG_ON__
 CFLAGS      = -std=c99 \
               -O2 \
               -DTECHNO_$(TECHNO) \
+              -I../includes \
               $(DEBUGFLAGS)
 LDFLAGS     = -lpthread 
 
 LIBSDIR=../libraries
 LIBSLIST=$(patsubst %/, %, $(shell ls -d $(LIBSDIR)/*/))
-
 LIBS=$(addprefix $(LIBDIR)/, $(addsuffix .a, $(notdir $(LIBSLIST))))
-INCLUDES=$(addprefix -I, $(LIBSLIST))
+LIBSINCLUDES=$(addprefix -I, $(LIBSLIST))
 
 SOURCES=$(shell echo *.c)
-OBJECTS=$(addprefix $(TECHNO).objects/, $(SOURCES:.c=.o))
+OBJECTSDIR=$(TECHNO).objects
+OBJECTS=$(addprefix $(OBJECTSDIR)/, $(SOURCES:.c=.o))
 
-$(TECHNO).objects/%.o: %.c
-	@$(CC) $(INCLUDES) -c $(CFLAGS) -MM -MT $(TECHNO).objects/$*.o $*.c > .deps/$*.dep
-	$(CC) $(INCLUDES) -c $(CFLAGS) $*.c -o $(TECHNO).objects/$*.o
+$(OBJECTSDIR)/%.o: %.c
+	@$(CC) -c $(CFLAGS) $(LIBSINCLUDES) -MM -MT $(TECHNO).objects/$*.o $*.c > .deps/$*.dep
+	$(CC) -c $(CFLAGS) $(LIBSINCLUDES) $*.c -o $(TECHNO).objects/$*.o
 
-all: .depsdir $(TECHNO).objects $(EXECUTABLEDIR)/$(EXECUTABLE)
+all: depsdir $(TECHNO).objects $(EXECUTABLEDIR)/$(EXECUTABLE)
 
-.depsdir:
+depsdir:
 	@mkdir -p .deps
 
-$(TECHNO).objects:
-	@mkdir -p $(TECHNO).objects
+$(OBJECTSDIR):
+	@mkdir -p $(OBJECTSDIR)
 
 $(EXECUTABLEDIR)/$(EXECUTABLE): $(OBJECTS)
 	@mkdir -p $(EXECUTABLEDIR)

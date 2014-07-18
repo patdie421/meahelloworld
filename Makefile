@@ -39,6 +39,9 @@ endif
 ifndef ARDUINOSKETCHDIR
 ARDUINOSKETCHDIR=src/$(SLAVE)
 endif
+ifndef BOARD
+BOARD=yun
+endif
 
 # déploiement
 YUNDEPLOY=no
@@ -62,9 +65,9 @@ endif
 
 SHELL = /bin/bash
 
-.DEFAULT_GOAL = all
-
 LIBS=$(shell ls -d src/libraries/*/)
+
+.DEFAULT_GOAL = all
 
 printenv:
 	@$(foreach V, $(sort $(.VARIABLES)), $(if $(filter-out environment% default automatic, $(origin $V)), $(warning $V=$($V) ($(value $V)))))
@@ -82,11 +85,11 @@ master:
 
 slave:
 ifneq "$(BUILDMCU)" "no"
-	$(MAKE) -C $(ARDUINOSKETCHDIR) -f arduino.mk MCUFAMILY=avr BOARD=yun HARDWARE=arduino TARGET=$(ARDUINOSKETCHNAME)
+	$(MAKE) -C $(ARDUINOSKETCHDIR) -f arduino.mk MCUFAMILY=avr BOARD=$(BOARD) HARDWARE=arduino TARGET=$(ARDUINOSKETCHNAME)
 else
 	@echo "MCU building disabled\n"
 endif
-		
+
 ifeq "$(YUNDEPLOY)" "yes"
 ifeq "$(TECHNO)" "openwrt"
 # voir :
@@ -131,4 +134,3 @@ ifeq "$(REMOTEBUILD)" "yes"
 remotebuild:
 	ssh $(REMOTEUSERNAME)@$(REMOTEHOSTNAME) ". .bash_aliases ; $(MAKE) -C $(REMOTEDEVDIR) TECHNO=openwrt clean all"
 endif
-

@@ -1,5 +1,5 @@
 APPSNAME=helloworld
-# BUILDMCU=yes
+#BUILDMCU=no
 #TECHNO=openwrt
 #MASTER=master
 #SLAVE=slave
@@ -13,3 +13,4 @@ REMOTEHOSTNAME=192.168.0.50
 REMOTEUSERNAME=patrice
 REMOTEDEVDIR=/home/patrice/Developpements/helloworld
 # CC=
+BOARD=yun

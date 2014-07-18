@@ -18,7 +18,7 @@ CFLAGS      = -std=c99 \
               -DTECHNO_$(TECHNO) \
               $(DEBUGFLAGS)
 
-LIBDIR=../../../$(TECHNO)/lib
+LIBDIR=../../../../$(TECHNO)/lib
 
 SOURCES=$(shell echo *.c)
 OBJECTS=$(addprefix $(TECHNO).objects/, $(SOURCES:.c=.o))
@@ -37,6 +37,7 @@ $(TECHNO).objects:
 
 $(LIBDIR)/$(LIBNAME): $(OBJECTS)
 	@mkdir -p $(LIBDIR)
+	rm -f $(LIBDIR)/$(LIBNAME)
 	ar q $(LIBDIR)/$(LIBNAME) $(OBJECTS)
 
 clean:
