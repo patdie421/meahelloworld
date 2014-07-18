@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 class MiniTimer
 {
  public:
@@ -7,7 +9,7 @@ class MiniTimer
    int check(unsigned long s);
  private:
    unsigned long previous;
-   inline unsigned long diff_millis(unsigned long chrono, unsigned long now} { return now >= chrono ? now - chrono : 0xFFFFFFFF - chrono + now; }
+   inline unsigned long diff_millis(unsigned long chrono, unsigned long now) { return now >= chrono ? now - chrono : 0xFFFFFFFF - chrono + now; };
 };
 
  

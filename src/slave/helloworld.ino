@@ -1,4 +1,5 @@
 #include "comio2.h"
+#include "minitimer.h"
 
 Comio2 comio2;
 
