@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "comio2.h"
 
@@ -8,7 +9,8 @@ static char *serial = "/dev/ttyATH0";
 int main(int argc, char *argv[])
 {
    comio2_ad_t *ad=NULL;
-   int error;
+   int16_t error;
+   char data[1];
 
    printf("Hello, world (from ");
 
@@ -23,6 +25,7 @@ int main(int argc, char *argv[])
    printf(")\n");
 
    ad=comio2_new_ad();
+
    int ret=comio2_init(ad, serial, B115200);
    if(ret<0)
    {
@@ -31,7 +34,13 @@ int main(int argc, char *argv[])
       fprintf(stderr, "\n");
       exit(1);
    }
-   comio2_atCmdSend(ad, 1, "", 0, &error);
-   
+
+   data[0]=1; // appel fonction numéro 1
+   comio2_cmdSend(ad, COMIO2_CMD_CALLFUNCTION, data, 1, &error);
+
+   printf("Look DEL13 : arduino say hello !\n");
+
+   comio2_free_ad(ad);
+ 
    comio2_close(ad);
 }

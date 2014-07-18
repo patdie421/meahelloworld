@@ -18,7 +18,7 @@ CFLAGS      = -std=c99 \
               -DTECHNO_$(TECHNO) \
               $(DEBUGFLAGS)
 
-LIBDIR=../../../../$(TECHNO)/lib
+LIBDIR=../../../$(TECHNO)/lib
 
 SOURCES=$(shell echo *.c)
 OBJECTS=$(addprefix $(TECHNO).objects/, $(SOURCES:.c=.o))
