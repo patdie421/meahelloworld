@@ -206,7 +206,7 @@ AVRTOOLSPATH ?= $(subst :, , $(PATH)) $(ARDUINODIR)/hardware/tools \
 	$(ARDUINODIR)/hardware/tools/$(MCUFAMILY)/bin
 
 # default path to find libraries
-LIBRARYPATH ?= libraries libs $(SKETCHBOOKDIR)/libraries $(ARDUINODIR)/hardware/$(HARDWARE)/$(MCUFAMILY)/libraries
+LIBRARYPATH ?= ../libraries/arduino libraries libs $(SKETCHBOOKDIR)/libraries $(ARDUINODIR)/hardware/$(HARDWARE)/$(MCUFAMILY)/libraries
 
 # default serial device to a poor guess (something that might be an arduino)
 SERIALDEVGUESS := 0

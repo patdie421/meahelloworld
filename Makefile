@@ -1,5 +1,11 @@
 -include config.mk
 
+# repertoire de base contenant l'arboressance de compilation
+ifndef
+BASEDIR=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+endif
+
+# techno cible du module master
 ifndef TECHNO
 TECHNO=$(shell uname | tr "[:upper:]" "[:lower:]")
 ifeq "$(TECHNO)" "darwin"
@@ -7,7 +13,7 @@ TECHNO=macosx
 endif
 endif
 
-# choix du compilateur
+# choix du compilateur pour le module master
 ifeq "$(TECHNO)" "openwrt"
 ifndef STAGING_DIR
 $(error "STAGING_DIR not set, can't make openwrt binaries")
@@ -21,29 +27,40 @@ ifndef BUILDMCU
 BUILDMCU=yes
 endif
 
-# noms des repertoires et des binaires
-ifndef MASTER
-MASTER=master
+# noms des repertoires
+ifndef SRCDIR
+SRCDIR=src
 endif
 
-ifndef SLAVE
-SLAVE=slave
+ifndef MASTERDIR
+MASTERDIR=master
 endif
 
-ifndef EXECUTABLE
-EXECUTABLE=$(APPSNAME)
+ifndef SLAVEDIR
+SLAVEDIR=slave
 endif
+
+ifndef LIBSDIR
+LIBSDIR=libraries/unix
+endif
+
+# nom des executables
+ifndef BINNAME
+BINNAME=$(APPSNAME)
+endif
+
 ifndef ARDUINOSKETCHNAME
 ARDUINOSKETCHNAME=$(APPSNAME)
 endif
 ifndef ARDUINOSKETCHDIR
-ARDUINOSKETCHDIR=src/$(SLAVE)
+ARDUINOSKETCHDIR=$(SRCDIR)/$(SLAVEDIR)
 endif
 ifndef BOARD
 BOARD=yun
 endif
 
 # déploiement
+ifndef YUNDEPLOY
 YUNDEPLOY=no
 ifdef YUNHOSTNAME
 ifdef YUNUSERNAME
@@ -52,8 +69,10 @@ YUNDEPLOY=yes
 endif
 endif
 endif
+endif
 
 # remote build
+ifndef REMOTEBUILD
 REMOTEBUILD=no
 ifdef REMOTEHOSTNAME
 ifdef REMOTEUSERNAME
@@ -62,10 +81,10 @@ REMOTEBUILD=yes
 endif
 endif
 endif
+endif
 
 SHELL = /bin/bash
 
-LIBS=$(shell ls -d src/libraries/*/)
 
 .DEFAULT_GOAL = all
 
@@ -75,17 +94,14 @@ printenv:
 all: libs master slave
 
 libs:
-	@for i in $(LIBS) ; \
-        do \
-           $(MAKE) -C $$i -f library.mk TECHNO=$(TECHNO) CC=$(CC); \
-        done
+	$(MAKE) -C $(SRCDIR)/$(LIBSDIR) -f libraries.mk BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) CC=$(CC)
 
 master:
-	$(MAKE) -C src/$(MASTER) EXECUTABLE=$(EXECUTABLE) TECHNO=$(TECHNO) CC=$(CC)
+	$(MAKE) -C $(SRCDIR)/$(MASTERDIR) -f master.mk BASEDIR=$(BASEDIR) BINNAME=$(BINNAME) TECHNO=$(TECHNO) CC=$(CC)
 
 slave:
 ifneq "$(BUILDMCU)" "no"
-	$(MAKE) -C $(ARDUINOSKETCHDIR) -f arduino.mk MCUFAMILY=avr BOARD=$(BOARD) HARDWARE=arduino TARGET=$(ARDUINOSKETCHNAME)
+	$(MAKE) -C $(ARDUINOSKETCHDIR) -f slave.mk MCUFAMILY=avr BOARD=$(BOARD) HARDWARE=arduino TARGET=$(ARDUINOSKETCHNAME)
 else
 	@echo "MCU building disabled\n"
 endif
@@ -96,10 +112,10 @@ ifeq "$(TECHNO)" "openwrt"
 # http://wiki.openwrt.org/doku.php?id=oldwiki:dropbearpublickeyauthenticationhowto
 # pour la mise en place des cles ssh, 
 installserver: all
-	scp $(TECHNO)/$(EXECUTABLE) $(YUNUSERNAME)@$(YUNHOSTNAME):$(YUNINSTALLDIR)
+	scp $(TECHNO)/$(BINNAME) $(YUNUSERNAME)@$(YUNHOSTNAME):$(YUNINSTALLDIR)
 
 execserver:
-	ssh $(YUNUSERNAME)@$(YUNHOSTNAME) $(YUNINSTALLDIR)/$(EXECUTABLE)
+	ssh $(YUNUSERNAME)@$(YUNHOSTNAME) $(YUNINSTALLDIR)/$(BINNAME)
 endif
 endif
 
@@ -107,23 +123,20 @@ clean: cleanmaster cleanslave cleanlibs
 
 cleanmaster:
 	rm -f $(YUNINSTALLFLAG)
-	$(MAKE) -C src/$(MASTER) TECHNO=$(TECHNO) EXECUTABLE=$(EXECUTABLE) clean
+	$(MAKE) -f master.mk -C $(SRCDIR)/$(MASTERDIR) BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) BINNAME=$(BINNAME) clean
 
 ifneq "$(BUILDMCU)" "no"
 cleanslave: cleanarduino
 
 cleanarduino:
-	$(MAKE) -C $(ARDUINOSKETCHDIR) -f arduino.mk clean
+	$(MAKE) -C $(ARDUINOSKETCHDIR) -f slave.mk clean
 else
 cleanslave:
 	@echo "BUILDMCU is set to no: Arduino skech will not be clean"
 endif
 
 cleanlibs:
-	@for i in $(LIBS) ; \
-        do \
-           $(MAKE) -C $$i -f library.mk TECHNO=$(TECHNO) clean ; \
-        done
+	$(MAKE) -C $(SRCDIR)/$(LIBSDIR) -f libraries.mk BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) clean
 
 ifneq "$(BUILDMCU)" "no"
 installsketch: slave

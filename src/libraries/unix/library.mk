@@ -1,5 +1,9 @@
 -include config.mk
 
+ifndef BASEDIR
+$(error - BASEDIR is unset)
+endif
+
 ifndef TECHNO
 $(error - TECHNO is unset)
 endif
@@ -18,7 +22,7 @@ CFLAGS      = -std=c99 \
               -DTECHNO_$(TECHNO) \
               $(DEBUGFLAGS)
 
-LIBDIR=../../../$(TECHNO)/lib
+LIBDIR=$(BASEDIR)/$(TECHNO)/lib
 
 SOURCES=$(shell echo *.c)
 OBJECTS=$(addprefix $(TECHNO).objects/, $(SOURCES:.c=.o))

@@ -1,14 +1,18 @@
 -include config.mk
 
 ifndef TECHNO
-$(error - TECHNO is unset, set it : to openwrt, linux or macosx)
+$(error - TECHNO is unset)
 endif
 
-ifndef EXECUTABLE
-$(error - EXECUTABLE is unset)
+ifndef BASEDIR
+$(error - BASEDIR is unset)
 endif
-EXECUTABLEDIR=../../$(TECHNO)/bin
-LIBDIR=../../$(TECHNO)/lib
+
+ifndef BINNAME
+$(error - BINNAME is unset)
+endif
+BINDIR=$(BASEDIR)/$(TECHNO)/bin
+LIBDIR=$(BASEDIR)/$(TECHNO)/lib
 
 SHELL = /bin/bash
 
@@ -20,7 +24,7 @@ CFLAGS      = -std=c99 \
               $(DEBUGFLAGS)
 LDFLAGS     = -lpthread 
 
-LIBSDIR=../libraries
+LIBSDIR=../libraries/unix
 LIBSLIST=$(patsubst %/, %, $(shell ls -d $(LIBSDIR)/*/))
 LIBS=$(addprefix $(LIBDIR)/, $(addsuffix .a, $(notdir $(LIBSLIST))))
 LIBSINCLUDES=$(addprefix -I, $(LIBSLIST))
@@ -33,7 +37,7 @@ $(OBJECTSDIR)/%.o: %.c
 	@$(CC) -c $(CFLAGS) $(LIBSINCLUDES) -MM -MT $(TECHNO).objects/$*.o $*.c > .deps/$*.dep
 	$(CC) -c $(CFLAGS) $(LIBSINCLUDES) $*.c -o $(TECHNO).objects/$*.o
 
-all: depsdir $(TECHNO).objects $(EXECUTABLEDIR)/$(EXECUTABLE)
+all: depsdir $(TECHNO).objects $(BINDIR)/$(BINNAME)
 
 depsdir:
 	@mkdir -p .deps
@@ -41,11 +45,11 @@ depsdir:
 $(OBJECTSDIR):
 	@mkdir -p $(OBJECTSDIR)
 
-$(EXECUTABLEDIR)/$(EXECUTABLE): $(OBJECTS)
-	@mkdir -p $(EXECUTABLEDIR)
+$(BINDIR)/$(BINNAME): $(OBJECTS)
+	@mkdir -p $(BINDIR)
 	$(CC) $(OBJECTS) $(LIBS) $(LDFLAGS) -o $@
 
 clean:
-	rm -f $(TECHNO).objects/*.o $(EXECUTABLEDIR)/$(EXECUTABLE) .deps/*.dep
+	rm -f $(TECHNO).objects/*.o $(BINDIR)/$(BINNAME) .deps/*.dep
  
 -include .deps/*.dep
