@@ -91,10 +91,15 @@ SHELL = /bin/bash
 printenv:
 	@$(foreach V, $(sort $(.VARIABLES)), $(if $(filter-out environment% default automatic, $(origin $V)), $(warning $V=$($V) ($(value $V)))))
 
-all: libs master slave
+all: libs libsothers master slave others
 
 libs:
 	$(MAKE) -C $(SRCDIR)/$(LIBSDIR) -f libraries.mk BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) CC=$(CC)
+
+libsothers:
+	@if [ -e $(SRCDIR)/$(LIBSDIR)/others/Makefile ]; then \
+	   $(MAKE) -C $(SRCDIR)/$(LIBSDIR)/others BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) CC=$(CC); \
+	fi
 
 master:
 	$(MAKE) -C $(SRCDIR)/$(MASTERDIR) -f master.mk BASEDIR=$(BASEDIR) BINNAME=$(BINNAME) TECHNO=$(TECHNO) CC=$(CC)
@@ -106,15 +111,20 @@ else
 	@echo "MCU building disabled\n"
 endif
 
+others:
+	@if [ -e $(SRCDIR)/others/Makefile ]; then \
+	   $(MAKE) -C $(SRCDIR)/others BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) CC=$(CC); \
+	fi
+
 ifeq "$(YUNDEPLOY)" "yes"
 ifeq "$(TECHNO)" "openwrt"
 # voir :
 # http://wiki.openwrt.org/doku.php?id=oldwiki:dropbearpublickeyauthenticationhowto
 # pour la mise en place des cles ssh, 
-installserver: all
+installmaster: all
 	scp $(TECHNO)/$(BINNAME) $(YUNUSERNAME)@$(YUNHOSTNAME):$(YUNINSTALLDIR)
 
-execserver:
+execmaster:
 	ssh $(YUNUSERNAME)@$(YUNHOSTNAME) $(YUNINSTALLDIR)/$(BINNAME)
 endif
 endif
@@ -139,7 +149,7 @@ cleanlibs:
 	$(MAKE) -C $(SRCDIR)/$(LIBSDIR) -f libraries.mk BASEDIR=$(BASEDIR) TECHNO=$(TECHNO) clean
 
 ifneq "$(BUILDMCU)" "no"
-installsketch: slave
+installslave: slave
 	scp $(ARDUINOSKETCH).hex $(YUNUSERNAME)@$(YUNHOSTNAME):$(YUNINSTALLDIR) ; ssh $(YUNUSERNAME)@$(YUNHOSTNAME) run-avrdude $(YUNINSTALLDIR)/$(ARDUINOSKETCHNAME).hex
 endif
 
